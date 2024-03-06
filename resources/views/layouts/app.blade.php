@@ -470,7 +470,6 @@
                     ['style', ['bold', 'italic', 'underline', 'clear']],
                     ['font', ['strikethrough', 'superscript', 'subscript']],
                     ['para', ['ul', 'ol', 'paragraph']],
-                    // Hapus 'picture' dan 'video' dari toolbar
                     ['insert', ['link', 'table', 'hr']],
                     ['view', ['fullscreen', 'codeview']],
                 ]

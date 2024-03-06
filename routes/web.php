@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\TeleMessageController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,5 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Route::get('/get-tuban-data', [TeleMessageController::class, 'getPlantTubanData']);
 
 Route::post('send-message', [TeleMessageController::class, 'sendMessage'])->name('send_message');
