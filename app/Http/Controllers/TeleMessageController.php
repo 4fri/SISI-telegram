@@ -26,7 +26,7 @@ class TeleMessageController extends Controller
             $imageUrl = storage_path("app/{$filePath}/{$filename}");
         }
 
-        $botToken = env('APP_BOT_TELEGRAM');
+        $botToken = env('TELEGRAM_BOT_TOKEN');
         $sendMessage = "https://api.telegram.org/bot{$botToken}/sendMessage";
         $sendPhoto = "https://api.telegram.org/bot{$botToken}/sendPhoto";
 
@@ -44,7 +44,7 @@ class TeleMessageController extends Controller
             foreach ($request->send_group as $chat_id) {
                 // Kirim pesan dengan foto terlampir
                 $response = Http::post($sendMessage, [
-                    'chat_id' => $chat_id,
+                    'chat_id' => $request->sender_group,
                     'text' => $messageText,
                     'parse_mode' => 'HTML',
                 ]);
