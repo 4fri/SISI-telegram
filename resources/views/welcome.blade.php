@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-7">
                 <div class="card">
-                    <form action="{{ route('send_message') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('send_telegram') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="card-header">
                             <label class="title" for="">Send Telegram</label>
@@ -44,7 +44,7 @@
                                 <div class="form-group">
                                     <label for="">File Report <span class="text-danger">*</span></label>
                                     <input class="form-control @error('sender_file') is-invalid @enderror" type="file"
-                                        name="sender_file">
+                                        name="sender_file[]" multiple>
                                     <span class="text-muted"><small>File berupa png,jpg,jpeg,pdf ukuran maks
                                             2mb</small></span>
                                     @error('sender_file')

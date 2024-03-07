@@ -8,59 +8,30 @@ use Illuminate\Support\Facades\Http;
 
 class TeleMessageController extends Controller
 {
-    public function sendMessage(Request $request)
+
+    public function sendTelegram(Request $request)
     {
         $request->validate([
             'send_group' => ['required'],
             'sender_message' => ['nullable'],
-            'sender_file' => ['required', 'mimes:png,jpg,jpeg,pdf', 'max:2048'],
+            'sender_file' => ['required', 'max:2048'],
         ]);
-
-        $today = date('d-m-Y');
-
-        if ($request->hasFile('sender_file')) {
-            $file = $request->file('sender_file');
-            $filename = $file->getClientOriginalName();
-            $filePath = 'public/report/' . $today;
-            $file->storeAs($filePath, $filename);
-            $imageUrl = storage_path("app/{$filePath}/{$filename}");
-        }
 
         $botToken = env('TELEGRAM_BOT_TOKEN');
         $sendMessage = "https://api.telegram.org/bot{$botToken}/sendMessage";
         $sendPhoto = "https://api.telegram.org/bot{$botToken}/sendPhoto";
 
-        $messageData = [
-            'title' => 'Notice!!!',
-            'content' => $request->sender_message,
-        ];
-
-        // Membersihkan HTML sebelum digunakan
-        $cleanedContent = $this->cleanHTML($messageData['content']);
-
-        $messageText = "{$messageData['title']}\n\n{$cleanedContent}";
-
         try {
             foreach ($request->send_group as $chat_id) {
-                // Kirim pesan dengan foto terlampir
+                $messageText = $this->sendMessage($request->sender_message);
+
                 $response = Http::post($sendMessage, [
-                    'chat_id' => $request->sender_group,
+                    'chat_id' => $chat_id,
                     'text' => $messageText,
                     'parse_mode' => 'HTML',
                 ]);
 
-                if ($request->hasFile('sender_file')) {
-                    // Kirim foto terlampir
-                    $response = Http::attach(
-                        'photo',
-                        file_get_contents($imageUrl),
-                        'photo.jpg'
-                    )->post($sendPhoto, [
-                        'chat_id' => $chat_id,
-                        'caption' => 'Report Gambar',
-                        'parse_mode' => 'HTML',
-                    ]);
-                }
+                $response = $this->sendPhoto($request, $chat_id, $sendPhoto);
 
                 if ($response->successful()) {
                     Toastr::success('Pesan telah terkirim ' . "$chat_id", 'Berhasil');
@@ -69,10 +40,53 @@ class TeleMessageController extends Controller
                 }
             }
 
+
             return back();
         } catch (\Exception $e) {
             return $e->getMessage();
         }
+    }
+
+    private function sendMessage($sender_message)
+    {
+        $messageData = [
+            'title' => 'Notice!!!',
+            'content' => $sender_message,
+        ];
+
+        // Membersihkan HTML sebelum digunakan
+        $cleanedContent = $this->cleanHTML($messageData['content']);
+
+        $messageText = "{$messageData['title']}\n\n{$cleanedContent}";
+
+        return $messageText;
+    }
+
+    private function sendPhoto($request, $chat_id, $sendPhoto)
+    {
+        $today = date('d-m-Y');
+
+        foreach ($request->file('sender_file') as $file) {
+            if ($file) {
+                $filename = $file->getClientOriginalName();
+                $filePath = 'public/report/' . $today;
+                $file->storeAs($filePath, $filename);
+                $imageUrl = storage_path("app/{$filePath}/{$filename}");
+            }
+
+            // Kirim foto terlampir
+            $response = Http::attach(
+                'photo',
+                file_get_contents($imageUrl),
+                'photo.jpg'
+            )->post($sendPhoto, [
+                'chat_id' => $chat_id,
+                'caption' => 'Report Gambar',
+                'parse_mode' => 'HTML',
+            ]);
+        }
+
+        return $response;
     }
 
     private function cleanHTML($html)

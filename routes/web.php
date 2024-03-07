@@ -21,4 +21,4 @@ Route::get('/', function () {
 
 // Route::get('/get-tuban-data', [TeleMessageController::class, 'getPlantTubanData']);
 
-Route::post('send-message', [TeleMessageController::class, 'sendMessage'])->name('send_message');
+Route::post('send-telegram', [TeleMessageController::class, 'sendTelegram'])->name('send_telegram');
