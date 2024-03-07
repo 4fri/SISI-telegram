@@ -31,7 +31,9 @@ class TeleMessageController extends Controller
                     'parse_mode' => 'HTML',
                 ]);
 
-                $response = $this->sendPhoto($request, $chat_id, $sendPhoto);
+                foreach ($request->file('sender_file') as $file) {
+                    $response = $this->sendPhoto($file, $chat_id, $sendPhoto);
+                }
 
                 if ($response->successful()) {
                     Toastr::success('Pesan telah terkirim ' . "$chat_id", 'Berhasil');
@@ -62,29 +64,27 @@ class TeleMessageController extends Controller
         return $messageText;
     }
 
-    private function sendPhoto($request, $chat_id, $sendPhoto)
+    private function sendPhoto($file, $chat_id, $sendPhoto)
     {
         $today = date('d-m-Y');
 
-        foreach ($request->file('sender_file') as $file) {
-            if ($file) {
-                $filename = $file->getClientOriginalName();
-                $filePath = 'public/report/' . $today;
-                $file->storeAs($filePath, $filename);
-                $imageUrl = storage_path("app/{$filePath}/{$filename}");
-            }
-
-            // Kirim foto terlampir
-            $response = Http::attach(
-                'photo',
-                file_get_contents($imageUrl),
-                'photo.jpg'
-            )->post($sendPhoto, [
-                'chat_id' => $chat_id,
-                'caption' => 'Report Gambar',
-                'parse_mode' => 'HTML',
-            ]);
+        if ($file) {
+            $filename = $file->getClientOriginalName();
+            $filePath = 'public/report/' . $today;
+            $file->storeAs($filePath, $filename);
+            $imageUrl = storage_path("app/{$filePath}/{$filename}");
         }
+
+        // Kirim foto terlampir
+        $response = Http::attach(
+            'photo',
+            file_get_contents($imageUrl),
+            'photo.jpg'
+        )->post($sendPhoto, [
+            'chat_id' => $chat_id,
+            'caption' => 'Report Gambar',
+            'parse_mode' => 'HTML',
+        ]);
 
         return $response;
     }
